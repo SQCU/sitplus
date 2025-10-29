@@ -1,5 +1,6 @@
 from functools import partial
 import torch
+from torch.nn.attention.flex_attention import _vmap_for_bhqkv
 
 # --- Helper Functions ---
 def create_scale_boundaries(num_scales: int, tokens_per_scale: int) -> list[tuple[int, int]]:
@@ -122,41 +123,46 @@ def create_sit_mask_function(
     window_radius: int = 2 # Add the new parameter with a default
 ):
     """
-    Factory function that returns the correct, configured predicate function.
+    Factory that returns a fully-tensorized, JIT-compatible predicate function.
     """
     scale_edge_len = int(tokens_per_scale**0.5)
     
-    if is_global_layer:
-        # Global Layer: scale-causal only.
-        def mask_fn(b, h, q_idx, kv_idx):
-            q_scale = q_idx // tokens_per_scale
-            kv_scale = kv_idx // tokens_per_scale
+    def mask_mod(b, h, m, n):
+        # m is a tensor of q_indices, n is a tensor of kv_indices.
+        # This function is designed to be traced by torch.compile/vmap.
+        
+        q_scale = m // tokens_per_scale
+        kv_scale = n // tokens_per_scale
+
+        if is_global_layer:
+            # Global Layer: scale-causal mask.
+            # This is a pure tensor operation.
             return kv_scale <= q_scale
-    else:
-        # SWA Layer: True 2D sliding window.
-        def mask_fn(b, h, q_idx, kv_idx):
-            # The radius is now configurable.
-            radius = window_radius if window_radius is not None else scale_edge_len
+        else:
+            # SWA Layer: spatial sliding window.
             
-            q_scale = q_idx // tokens_per_scale
-            kv_scale = kv_idx // tokens_per_scale
+            # 1. Same-scale check (tensor op)
+            same_scale_mask = (q_scale == kv_scale)
             
-            if q_scale != kv_scale:
-                return False # Hard block on cross-scale attention
+            # 2. Spatial window check (tensor ops)
+            q_local_idx = m % tokens_per_scale
+            kv_local_idx = n % tokens_per_scale
             
-            # Convert to 2D coords and check distance
-            q_local_idx = q_idx % tokens_per_scale
-            kv_local_idx = kv_idx % tokens_per_scale
+            q_y = q_local_idx // scale_edge_len
+            q_x = q_local_idx % scale_edge_len
+            kv_y = kv_local_idx // scale_edge_len
+            kv_x = kv_local_idx % scale_edge_len
             
-            q_y, q_x = q_local_idx // scale_edge_len, q_local_idx % scale_edge_len
-            kv_y, kv_x = kv_local_idx // scale_edge_len, kv_local_idx % scale_edge_len
+            dist_y = torch.abs(q_y - kv_y)
+            dist_x = torch.abs(q_x - kv_x)
             
-            dist_y = abs(q_y - kv_y)
-            dist_x = abs(q_x - kv_x)
+            # The `max` function on tensors is traceable.
+            window_mask = torch.max(dist_y, dist_x) <= window_radius
             
-            return (dist_y <= radius) and (dist_x <= radius)
-    
-    return mask_fn
+            # 3. Combine masks (logical AND is a traceable tensor op)
+            return same_scale_mask & window_mask
+
+    return mask_mod
 
 """
 flex_attention(

@@ -1,34 +1,16 @@
-# sitplus.utils.encoder
+# sitplus.utils.decoder
 import torch
 from torch import nn
-from torch.nn.attention.flex_attention import flex_attention
-from torch.nn.attention.flex_attention import create_block_mask
+from torch.nn.attention.flex_attention import flex_attention, create_block_mask
 
-# Import the context manager for our test
-from torch.backends.cuda import sdp_kernel 
-
+# Import from our existing, verified components
 from sitplus.utils.attention import RotaryPositionalEmbedding, apply_rotary_pos_emb
 from sitplus.utils.masks import create_sit_mask_function
+from sitplus.utils.encoder import RMSNorm # Reuse the same RMSNorm
 
-class RMSNorm(nn.Module):
-    """
-    A non-affine RMSNorm implementation, as used in many modern Transformers.
-    No learnable weight or bias.
-    """
-    def __init__(self, d_model: int, eps: float = 1e-8):
-        super().__init__()
-        self.eps = eps
-        # The gain is now a simple scalar, not a learnable vector.
-        self.scale = d_model ** 0.5
-
-    def forward(self, x):
-        # The formula is: (x / sqrt(mean(x^2) + eps)) * scale
-        # For RMSNorm, the scale is just sqrt(dim), but many implementations omit it.
-        # We'll use the standard (x * rsqrt(var + eps)) form.
-        normed_x = x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
-        return normed_x
-
-class SitEncoderLayer(nn.Module):
+class SitDecoderLayer(nn.Module):
+    # This class is a direct copy of the corrected SitEncoderLayer, just renamed.
+    # Its logic (split/attend/rejoin, scale-causality) is identical for reconstruction.
     def __init__(
         self,
         d_model: int = 256,
@@ -137,8 +119,7 @@ class SitEncoderLayer(nn.Module):
         
         return torch.cat([output_coarse, output_fine], dim=1)
 
-
-class SitEncoder(nn.Module):
+class SitDecoder(nn.Module):
     def __init__(
         self,
         raw_token_dims: list[int],
@@ -156,20 +137,13 @@ class SitEncoder(nn.Module):
     ):
         super().__init__()
         
-        # 1. Input Projection Layers
-        # A unique projection for each scale is necessary because their
-        # raw feature dimensions are different. This is the core design.
-        self.projections = nn.ModuleList(
-            [nn.Linear(dim, d_model) for dim in raw_token_dims]
-        )
-        
-        # 2. Stack of Encoder Layers
+        # 1. Decoder Layers (identical structure to encoder)
         self.layers = nn.ModuleList([])
         for i in range(n_layers):
             # Every 3rd layer (0-indexed: 2, 5, 8...) is global
             is_global = (i + 1) % 3 == 0
             self.layers.append(
-                SitEncoderLayer(
+                SitDecoderLayer(
                     d_model=d_model,
                     d_ff=d_ff,
                     n_heads=n_heads,
@@ -190,20 +164,29 @@ class SitEncoder(nn.Module):
         elif norm_type == "layernorm":
             self.norm_out = nn.LayerNorm(d_model, elementwise_affine=False)
 
-    def forward(self, tokens_list: list[torch.Tensor]) -> torch.Tensor:
-        # Apply the unique projection for each corresponding scale
-        projected_tokens = [
-            self.projections[i](tokens) for i, tokens in enumerate(tokens_list)
-        ]
-            
-        # Concatenate into a single sequence for the Transformer
-        x = torch.cat(projected_tokens, dim=1)
+        # 3. Output Projection Layers
+        # This is the key difference: maps from d_model back to raw token dimensions.
+        self.output_projections = nn.ModuleList(
+            [nn.Linear(d_model, dim) for dim in raw_token_dims]
+        )
+        self.tokens_per_scale = tokens_per_scale
+        self.num_scales = len(raw_token_dims)
+
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+        # Input x is the sequence of embeddings from the quantizer, shape (B, T, C)
         
         # Pass through the stack of layers
         for layer in self.layers:
             x = layer(x)
             
-        # Apply final normalization
         x = self.norm_out(x)
         
-        return x
+        # Split the final sequence back into per-scale chunks
+        scale_chunks = torch.split(x, self.tokens_per_scale, dim=1)
+        
+        # Apply the unique output projection for each corresponding scale
+        output_tokens_list = [
+            self.output_projections[i](chunk) for i, chunk in enumerate(scale_chunks)
+        ]
+        
+        return output_tokens_list
