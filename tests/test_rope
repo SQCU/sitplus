@@ -1,0 +1,58 @@
+# python -m tests.test_rope
+import torch
+from sitplus.components.attention import RotaryPositionalEmbedding, apply_rotary_pos_emb
+
+def test_rope_properties():
+    print("--- Running 1D RoPE Properties Test ---")
+    
+    # --- Configuration ---
+    batch_size = 1
+    num_heads = 1
+    seq_len = 320
+    head_dim = 64
+    
+    # 1. Initialization
+    # Use a non-default base for our main test object
+    rope_base_500 = RotaryPositionalEmbedding(dim=head_dim, max_seq_len=seq_len, base=500)
+    rope_base_10000 = RotaryPositionalEmbedding(dim=head_dim, max_seq_len=seq_len, base=10000)
+    
+    # Create dummy query and key tensors
+    q = torch.randn(batch_size, num_heads, seq_len, head_dim)
+    k = torch.randn(batch_size, num_heads, seq_len, head_dim)
+
+    # 2. Apply RoPE from both modules
+    q_rot_500, _ = apply_rotary_pos_emb(q, k, rope_base_500)
+    q_rot_10000, _ = apply_rotary_pos_emb(q, k, rope_base_10000)
+
+    # 3. Verification
+    
+    # Test 1: Base Sensitivity
+    assert not torch.allclose(q_rot_500, q_rot_10000), \
+        "RoPE embeddings should differ for different bases."
+    print("✅ Embeddings are sensitive to the 'base' parameter.")
+
+    # Test 2: Shape Integrity (using base 500 module)
+    assert q_rot_500.shape == q.shape, "RoPE should not change query shape"
+    print("✅ Shapes are preserved.")
+
+    # Test 3: Positional Sensitivity
+    assert not torch.allclose(q_rot_500[..., 0, :], q_rot_500[..., 1, :]), \
+        "RoPE should produce different embeddings for different positions."
+    print("✅ Embeddings are position-sensitive.")
+
+    # Test 4: Relative Position Invariance
+    q_const = torch.randn(batch_size, num_heads, 1, head_dim).expand(-1, -1, seq_len, -1)
+    k_const = torch.randn(batch_size, num_heads, 1, head_dim).expand(-1, -1, seq_len, -1)
+    q_const_rot, k_const_rot = apply_rotary_pos_emb(q_const, k_const, rope_base_500)
+    
+    score_const_1 = torch.einsum("...d,...d->...", q_const_rot[..., 5, :], k_const_rot[..., 10, :])
+    score_const_2 = torch.einsum("...d,...d->...", q_const_rot[..., 15, :], k_const_rot[..., 20, :])
+
+    assert torch.allclose(score_const_1, score_const_2, atol=1e-6), \
+        "RoPE must maintain relative attention scores."
+    print("✅ Relative position invariance confirmed.")
+    
+    print("\n--- ✅ 1D RoPE Test Passed (with base=500) ---")
+
+if __name__ == "__main__":
+    test_rope_properties()
