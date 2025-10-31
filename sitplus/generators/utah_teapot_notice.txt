@@ -1,0 +1,13 @@
+From the wikimedia, retrieved 2025-10-29:
+```
+Summary
+Description 	
+English: This is a solid version of the Utah teapot (also known as the Newell teapot). I couldn't find one on here that didn't have a separate lid, so I made one.
+
+I don't know what scale it's set to, I've only printed it once, and the software for the printer allowed me to scale it, so I hope it works for you.
+I used 3D Studio Max (later known as Autodesk 3ds Max) to create the teapot and brought it into Blender, where I joined all the pieces together, sealed the holes and removed all the overlapping parts. This was then exported to STL.
+Date 	27 May 2015
+Source 	https://www.thingiverse.com/thing:852078
+Author 	zzubnik (Nik Clark, Norwich, UK)
+```
+this note is for the benefit of future readers to understand the provenance and apparent licensing (CC0) of the teapot.

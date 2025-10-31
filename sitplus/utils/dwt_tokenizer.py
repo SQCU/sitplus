@@ -1,4 +1,4 @@
-# sitplus.utils.dwt_tokenizer.py
+# sitplus.utils.dwt_tokenizer
 
 import torch
 

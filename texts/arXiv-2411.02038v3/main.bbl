@@ -1,0 +1,230 @@
+\begin{thebibliography}{44}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Achiam et~al.(2023)Achiam, Adler, Agarwal, Ahmad, Akkaya, Aleman, Almeida, Altenschmidt, Altman, Anadkat, et~al.]{achiam2023gpt}
+Josh Achiam, Steven Adler, Sandhini Agarwal, Lama Ahmad, Ilge Akkaya, Florencia~Leoni Aleman, Diogo Almeida, Janko Altenschmidt, Sam Altman, Shyamal Anadkat, et~al.
+\newblock Gpt-4 technical report.
+\newblock \emph{arXiv preprint arXiv:2303.08774}, 2023.
+
+\bibitem[Baevski et~al.(2020)Baevski, Zhou, Mohamed, and Auli]{NEURIPS2020_92d1e1eb}
+Alexei Baevski, Yuhao Zhou, Abdelrahman Mohamed, and Michael Auli.
+\newblock wav2vec 2.0: A framework for self-supervised learning of speech representations.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages 12449--12460. Curran Associates, Inc., 2020.
+
+\bibitem[Bengio et~al.(2013)Bengio, L{\'e}onard, and Courville]{bengio2013estimating}
+Yoshua Bengio, Nicholas L{\'e}onard, and Aaron Courville.
+\newblock Estimating or propagating gradients through stochastic neurons for conditional computation.
+\newblock \emph{arXiv preprint arXiv:1308.3432}, 2013.
+
+\bibitem[Borsos et~al.(2023)Borsos, Marinier, Vincent, Kharitonov, Pietquin, Sharifi, Roblek, Teboul, Grangier, Tagliasacchi, and Zeghidour]{10158503}
+Zalán Borsos, Raphaël Marinier, Damien Vincent, Eugene Kharitonov, Olivier Pietquin, Matt Sharifi, Dominik Roblek, Olivier Teboul, David Grangier, Marco Tagliasacchi, and Neil Zeghidour.
+\newblock Audiolm: A language modeling approach to audio generation.
+\newblock \emph{IEEE/ACM Transactions on Audio, Speech, and Language Processing}, 31:\penalty0 2523--2533, 2023.
+
+\bibitem[Bruce et~al.(2024)Bruce, Dennis, Edwards, Parker-Holder, Shi, Hughes, Lai, Mavalankar, Steigerwald, Apps, Aytar, Bechtle, Behbahani, Chan, Heess, Gonzalez, Osindero, Ozair, Reed, Zhang, Zolna, Clune, Freitas, Singh, and Rockt\"{a}schel]{pmlr-v235-bruce24a}
+Jake Bruce, Michael~D Dennis, Ashley Edwards, Jack Parker-Holder, Yuge Shi, Edward Hughes, Matthew Lai, Aditi Mavalankar, Richie Steigerwald, Chris Apps, Yusuf Aytar, Sarah Maria~Elisabeth Bechtle, Feryal Behbahani, Stephanie~C.Y. Chan, Nicolas Heess, Lucy Gonzalez, Simon Osindero, Sherjil Ozair, Scott Reed, Jingwei Zhang, Konrad Zolna, Jeff Clune, Nando~De Freitas, Satinder Singh, and Tim Rockt\"{a}schel.
+\newblock Genie: Generative interactive environments.
+\newblock In \emph{Proceedings of the 41st International Conference on Machine Learning}, pages 4603--4623. PMLR, 2024.
+
+\bibitem[D{\'e}fossez et~al.(2023)D{\'e}fossez, Copet, Synnaeve, and Adi]{efossez2023high}
+Alexandre D{\'e}fossez, Jade Copet, Gabriel Synnaeve, and Yossi Adi.
+\newblock High fidelity neural audio compression.
+\newblock \emph{Transactions on Machine Learning Research}, 2023.
+\newblock Featured Certification, Reproducibility Certification.
+
+\bibitem[Deng et~al.(2009)Deng, Dong, Socher, Li, Li, and Fei-Fei]{5206848}
+Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li Fei-Fei.
+\newblock Imagenet: A large-scale hierarchical image database.
+\newblock In \emph{2009 IEEE Conference on Computer Vision and Pattern Recognition}, pages 248--255, 2009.
+
+\bibitem[Dubey et~al.(2024)Dubey, Jauhri, Pandey, Kadian, Al-Dahle, Letman, Mathur, Schelten, Yang, Fan, et~al.]{dubey2024llama}
+Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Amy Yang, Angela Fan, et~al.
+\newblock The llama 3 herd of models.
+\newblock \emph{arXiv preprint arXiv:2407.21783}, 2024.
+
+\bibitem[Esser et~al.(2021)Esser, Rombach, and Ommer]{Esser_2021_CVPR}
+Patrick Esser, Robin Rombach, and Bjorn Ommer.
+\newblock Taming transformers for high-resolution image synthesis.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 12873--12883, 2021.
+
+\bibitem[Gao et~al.(2024)Gao, Tan, Wang, Huang, Wu, and Li]{gao2024foldtoken}
+Zhangyang Gao, Cheng Tan, Jue Wang, Yufei Huang, Lirong Wu, and Stan~Z Li.
+\newblock Foldtoken: Learning protein language via vector quantization and beyond.
+\newblock \emph{arXiv preprint arXiv:2403.09673}, 2024.
+
+\bibitem[Huh et~al.(2023)Huh, Cheung, Agrawal, and Isola]{pmlr-v202-huh23a}
+Minyoung Huh, Brian Cheung, Pulkit Agrawal, and Phillip Isola.
+\newblock Straightening out the straight-through estimator: Overcoming optimization challenges in vector quantized networks.
+\newblock In \emph{Proceedings of the 40th International Conference on Machine Learning}, pages 14096--14113. PMLR, 2023.
+
+\bibitem[Jang et~al.(2017)Jang, Gu, and Poole]{DBLP:conf/iclr/JangGP17}
+Eric Jang, Shixiang Gu, and Ben Poole.
+\newblock Categorical reparameterization with gumbel-softmax.
+\newblock In \emph{5th International Conference on Learning Representations, {ICLR} 2017, Toulon, France, April 24-26, 2017, Conference Track Proceedings}. OpenReview.net, 2017.
+
+\bibitem[Ji et~al.(2024)Ji, Jiang, Cheng, Chen, Fang, Zuo, Yang, Li, Zhang, Yang, et~al.]{ji2024wavtokenizer}
+Shengpeng Ji, Ziyue Jiang, Xize Cheng, Yifu Chen, Minghui Fang, Jialong Zuo, Qian Yang, Ruiqi Li, Ziang Zhang, Xiaoda Yang, et~al.
+\newblock Wavtokenizer: an efficient acoustic discrete codec tokenizer for audio language modeling.
+\newblock \emph{arXiv preprint arXiv:2408.16532}, 2024.
+
+\bibitem[Kingma and Welling(2013)]{Kingma2013AutoEncodingVB}
+Diederik~P. Kingma and Max Welling.
+\newblock Auto-encoding variational bayes.
+\newblock \emph{CoRR}, abs/1312.6114, 2013.
+
+\bibitem[Lee et~al.(2022)Lee, Kim, Kim, Cho, and Han]{Lee2022AutoregressiveIG}
+Doyup Lee, Chiheon Kim, Saehoon Kim, Minsu Cho, and Wook-Shin Han.
+\newblock Autoregressive image generation using residual quantization.
+\newblock \emph{2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 11513--11522, 2022.
+
+\bibitem[Mentzer et~al.(2024)Mentzer, Minnen, Agustsson, and Tschannen]{mentzer2024finite}
+Fabian Mentzer, David Minnen, Eirikur Agustsson, and Michael Tschannen.
+\newblock Finite scalar quantization: {VQ}-{VAE} made simple.
+\newblock In \emph{The Twelfth International Conference on Learning Representations}, 2024.
+
+\bibitem[Radford et~al.(2021)Radford, Kim, Hallacy, Ramesh, Goh, Agarwal, Sastry, Askell, Mishkin, Clark, Krueger, and Sutskever]{pmlr-v139-radford21a}
+Alec Radford, Jong~Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, and Ilya Sutskever.
+\newblock Learning transferable visual models from natural language supervision.
+\newblock In \emph{Proceedings of the 38th International Conference on Machine Learning}, pages 8748--8763. PMLR, 2021.
+
+\bibitem[Ramesh et~al.(2021)Ramesh, Pavlov, Goh, Gray, Voss, Radford, Chen, and Sutskever]{pmlr-v139-ramesh21a}
+Aditya Ramesh, Mikhail Pavlov, Gabriel Goh, Scott Gray, Chelsea Voss, Alec Radford, Mark Chen, and Ilya Sutskever.
+\newblock Zero-shot text-to-image generation.
+\newblock In \emph{Proceedings of the 38th International Conference on Machine Learning}, pages 8821--8831. PMLR, 2021.
+
+\bibitem[Razavi et~al.(2019)Razavi, van~den Oord, and Vinyals]{NEURIPS2019_5f8e2fa1}
+Ali Razavi, Aaron van~den Oord, and Oriol Vinyals.
+\newblock Generating diverse high-fidelity images with vq-vae-2.
+\newblock In \emph{Advances in Neural Information Processing Systems}. Curran Associates, Inc., 2019.
+
+\bibitem[Rix et~al.(2001)Rix, Beerends, Hollier, and Hekstra]{941023}
+A.W. Rix, J.G. Beerends, M.P. Hollier, and A.P. Hekstra.
+\newblock Perceptual evaluation of speech quality (pesq)-a new method for speech quality assessment of telephone networks and codecs.
+\newblock In \emph{2001 IEEE International Conference on Acoustics, Speech, and Signal Processing. Proceedings (Cat. No.01CH37221)}, pages 749--752 vol.2, 2001.
+
+\bibitem[Rombach et~al.(2022)Rombach, Blattmann, Lorenz, Esser, and Ommer]{Rombach_2022_CVPR}
+Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Bj\"orn Ommer.
+\newblock High-resolution image synthesis with latent diffusion models.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 10684--10695, 2022.
+
+\bibitem[Roy et~al.(2018)Roy, Vaswani, Neelakantan, and Parmar]{roy2018theory}
+Aurko Roy, Ashish Vaswani, Arvind Neelakantan, and Niki Parmar.
+\newblock Theory and experiments on vector quantized autoencoders.
+\newblock \emph{arXiv preprint arXiv:1805.11063}, 2018.
+
+\bibitem[Saeki et~al.(2022)Saeki, Xin, Nakata, Koriyama, Takamichi, and Saruwatari]{Saeki2022UTMOSUS}
+Takaaki Saeki, Detai Xin, Wataru Nakata, Tomoki Koriyama, Shinnosuke Takamichi, and Hiroshi Saruwatari.
+\newblock Utmos: Utokyo-sarulab system for voicemos challenge 2022.
+\newblock \emph{ArXiv}, abs/2204.02152, 2022.
+
+\bibitem[Siuzdak(2024)]{siuzdak2024vocos}
+Hubert Siuzdak.
+\newblock Vocos: Closing the gap between time-domain and fourier-based neural vocoders for high-quality audio synthesis.
+\newblock In \emph{The Twelfth International Conference on Learning Representations}, 2024.
+
+\bibitem[Sun et~al.(2024)Sun, Jiang, Chen, Zhang, Peng, Luo, and Yuan]{sun2024autoregressive}
+Peize Sun, Yi Jiang, Shoufa Chen, Shilong Zhang, Bingyue Peng, Ping Luo, and Zehuan Yuan.
+\newblock Autoregressive model beats diffusion: Llama for scalable image generation.
+\newblock \emph{arXiv preprint arXiv:2406.06525}, 2024.
+
+\bibitem[Takida et~al.(2022)Takida, Shibuya, Liao, Lai, Ohmura, Uesaka, Murata, Takahashi, Kumakura, and Mitsufuji]{pmlr-v162-takida22a}
+Yuhta Takida, Takashi Shibuya, Weihsiang Liao, Chieh-Hsin Lai, Junki Ohmura, Toshimitsu Uesaka, Naoki Murata, Shusuke Takahashi, Toshiyuki Kumakura, and Yuki Mitsufuji.
+\newblock {SQ}-{VAE}: Variational {B}ayes on discrete representation with self-annealed stochastic quantization.
+\newblock In \emph{Proceedings of the 39th International Conference on Machine Learning}, pages 20987--21012. PMLR, 2022.
+
+\bibitem[Tao et~al.(2024)Tao, Liu, Dou, Muennighoff, Wan, Luo, Lin, and Wong]{tao2024scaling}
+Chaofan Tao, Qian Liu, Longxu Dou, Niklas Muennighoff, Zhongwei Wan, Ping Luo, Min Lin, and Ngai Wong.
+\newblock Scaling laws with vocabulary: Larger models deserve larger vocabularies.
+\newblock \emph{arXiv preprint arXiv:2407.13623}, 2024.
+
+\bibitem[Team(2024)]{team2024chameleon}
+Chameleon Team.
+\newblock Chameleon: Mixed-modal early-fusion foundation models.
+\newblock \emph{arXiv preprint arXiv:2405.09818}, 2024.
+
+\bibitem[van~den Oord et~al.(2017)van~den Oord, Vinyals, and kavukcuoglu]{NIPS2017_7a98af17}
+Aaron van~den Oord, Oriol Vinyals, and koray kavukcuoglu.
+\newblock Neural discrete representation learning.
+\newblock In \emph{Advances in Neural Information Processing Systems}. Curran Associates, Inc., 2017.
+
+\bibitem[Vuong et~al.(2023)Vuong, Le, Zhao, Zheng, Harandi, Cai, and Phung]{VQWasserstein}
+Tung-Long Vuong, Trung Le, He Zhao, Chuanxia Zheng, Mehrtash Harandi, Jianfei Cai, and Dinh Phung.
+\newblock Vector quantized wasserstein auto-encoder.
+\newblock In \emph{Proceedings of the 40th International Conference on Machine Learning}. JMLR.org, 2023.
+
+\bibitem[Wang et~al.(2023)Wang, Chen, Wu, Zhang, Zhou, Liu, Chen, Liu, Wang, Li, et~al.]{wang2023neural}
+Chengyi Wang, Sanyuan Chen, Yu Wu, Ziqiang Zhang, Long Zhou, Shujie Liu, Zhuo Chen, Yanqing Liu, Huaming Wang, Jinyu Li, et~al.
+\newblock Neural codec language models are zero-shot text to speech synthesizers.
+\newblock \emph{arXiv preprint arXiv:2301.02111}, 2023.
+
+\bibitem[Xiao et~al.(2023)Xiao, Qiu, and Sotiras]{Xiao2023SCVAESC}
+Pan Xiao, Peijie Qiu, and Aristeidis Sotiras.
+\newblock Sc-vae: Sparse coding-based variational autoencoder.
+\newblock \emph{ArXiv}, abs/2303.16666, 2023.
+
+\bibitem[Yu et~al.(2022{\natexlab{a}})Yu, Li, Koh, Zhang, Pang, Qin, Ku, Xu, Baldridge, and Wu]{yu2022vectorquantized}
+Jiahui Yu, Xin Li, Jing~Yu Koh, Han Zhang, Ruoming Pang, James Qin, Alexander Ku, Yuanzhong Xu, Jason Baldridge, and Yonghui Wu.
+\newblock Vector-quantized image modeling with improved {VQGAN}.
+\newblock In \emph{International Conference on Learning Representations}, 2022{\natexlab{a}}.
+
+\bibitem[Yu et~al.(2022{\natexlab{b}})Yu, Xu, Koh, Luong, Baid, Wang, Vasudevan, Ku, Yang, Ayan, Hutchinson, Han, Parekh, Li, Zhang, Baldridge, and Wu]{yu2022scaling}
+Jiahui Yu, Yuanzhong Xu, Jing~Yu Koh, Thang Luong, Gunjan Baid, Zirui Wang, Vijay Vasudevan, Alexander Ku, Yinfei Yang, Burcu~Karagol Ayan, Ben Hutchinson, Wei Han, Zarana Parekh, Xin Li, Han Zhang, Jason Baldridge, and Yonghui Wu.
+\newblock Scaling autoregressive models for content-rich text-to-image generation.
+\newblock \emph{Transactions on Machine Learning Research}, 2022{\natexlab{b}}.
+\newblock Featured Certification.
+
+\bibitem[Yu et~al.(2024)Yu, Lezama, Gundavarapu, Versari, Sohn, Minnen, Cheng, Gupta, Gu, Hauptmann, Gong, Yang, Essa, Ross, and Jiang]{yu2024language}
+Lijun Yu, Jose Lezama, Nitesh~Bharadwaj Gundavarapu, Luca Versari, Kihyuk Sohn, David Minnen, Yong Cheng, Agrim Gupta, Xiuye Gu, Alexander~G Hauptmann, Boqing Gong, Ming-Hsuan Yang, Irfan Essa, David~A Ross, and Lu Jiang.
+\newblock Language model beats diffusion - tokenizer is key to visual generation.
+\newblock In \emph{The Twelfth International Conference on Learning Representations}, 2024.
+
+\bibitem[Zen et~al.(2019)Zen, Dang, Clark, Zhang, Weiss, Jia, Chen, and Wu]{zen2019libritts}
+Heiga Zen, Viet Dang, Rob Clark, Yu Zhang, Ron~J Weiss, Ye Jia, Zhifeng Chen, and Yonghui Wu.
+\newblock Libritts: A corpus derived from librispeech for text-to-speech.
+\newblock \emph{arXiv preprint arXiv:1904.02882}, 2019.
+
+\bibitem[Zhang et~al.(2023{\natexlab{a}})Zhang, Li, Zhang, Zhan, Wang, Zhou, and Qiu]{zhang-etal-2023-speechgpt}
+Dong Zhang, Shimin Li, Xin Zhang, Jun Zhan, Pengyu Wang, Yaqian Zhou, and Xipeng Qiu.
+\newblock {S}peech{GPT}: Empowering large language models with intrinsic cross-modal conversational abilities.
+\newblock In \emph{Findings of the Association for Computational Linguistics: EMNLP 2023}, pages 15757--15773, Singapore, 2023{\natexlab{a}}. Association for Computational Linguistics.
+
+\bibitem[Zhang et~al.(2023{\natexlab{b}})Zhang, Zhan, Theobalt, and Lu]{Zhang_2023_CVPR}
+Jiahui Zhang, Fangneng Zhan, Christian Theobalt, and Shijian Lu.
+\newblock Regularized vector quantization for tokenized image synthesis.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 18467--18476, 2023{\natexlab{b}}.
+
+\bibitem[Zhang et~al.(2024)Zhang, Zhang, Li, Zhou, and Qiu]{zhang2024speechtokenizer}
+Xin Zhang, Dong Zhang, Shimin Li, Yaqian Zhou, and Xipeng Qiu.
+\newblock Speechtokenizer: Unified speech tokenizer for speech language models.
+\newblock In \emph{The Twelfth International Conference on Learning Representations}, 2024.
+
+\bibitem[Zheng and Vedaldi(2023)]{zheng2023online}
+Chuanxia Zheng and Andrea Vedaldi.
+\newblock Online clustered codebook.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on Computer Vision}, pages 22798--22807, 2023.
+
+\bibitem[Zheng et~al.(2022)Zheng, Song, Cham, Cai, Phung, and Luo]{Zheng2022HighQualityPI}
+Chuanxia Zheng, Guoxian Song, Tat-Jen Cham, Jianfei Cai, Dinh~Q. Phung, and Linjie Luo.
+\newblock High-quality pluralistic image completion via code shared vqgan.
+\newblock \emph{ArXiv}, abs/2204.01931, 2022.
+
+\bibitem[Zhu et~al.(2024{\natexlab{a}})Zhu, Wei, Lu, and Chen]{Zhu2024ScalingTC}
+Lei Zhu, Fangyun Wei, Yanye Lu, and Dong Chen.
+\newblock Scaling the codebook size of vqgan to 100,000 with a utilization rate of 99\%.
+\newblock \emph{ArXiv}, abs/2406.11837, 2024{\natexlab{a}}.
+
+\bibitem[Zhu et~al.(2024{\natexlab{b}})Zhu, Li, Zhang, Li, Xu, and Bing]{zhu2024stabilize}
+Yongxin Zhu, Bocheng Li, Hang Zhang, Xin Li, Linli Xu, and Lidong Bing.
+\newblock Stabilize the latent space for image autoregressive modeling: A unified perspective.
+\newblock In \emph{The Thirty-eighth Annual Conference on Neural Information Processing Systems}, 2024{\natexlab{b}}.
+
+\bibitem[Zhu et~al.(2024{\natexlab{c}})Zhu, Su, He, Xu, and Yu]{zhu-etal-2024-generative}
+Yongxin Zhu, Dan Su, Liqiang He, Linli Xu, and Dong Yu.
+\newblock Generative pre-trained speech language model with efficient hierarchical transformer.
+\newblock In \emph{Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)}, pages 1764--1775, Bangkok, Thailand, 2024{\natexlab{c}}. Association for Computational Linguistics.
+
+\end{thebibliography}

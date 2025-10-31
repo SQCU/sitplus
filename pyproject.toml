@@ -37,7 +37,9 @@ dependencies = [
     "gluon-experiment @ git+https://github.com/sqcu/gluon-experiment.git", # dion has rocked for a long long time
     #project related
     "pytorch-wavelets>=1.3.0",
-    "PyWavelets>=1.6.0"
+    "PyWavelets>=1.6.0",
+    "torch-pca",
+    "websockets>=12.0"
 ]
 
 [project.optional-dependencies]

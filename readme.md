@@ -2,6 +2,7 @@
 `uv venv --seed`
 `.venv\Scripts\activate`
 `uv sync --extra cuda`
+`python setup_blender.py`
 
 ```
 sitplus/

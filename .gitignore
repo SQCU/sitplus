@@ -5,3 +5,4 @@ sitplus/__pycache__/
 sitplus/generators/__pycache__/
 sitplus/utils/__pycache__/
 tests/__pycache__/
+bin/

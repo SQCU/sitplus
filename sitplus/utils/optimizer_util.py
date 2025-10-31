@@ -1,4 +1,4 @@
-# optimizer_util.py
+# sitplus.utils.optimizer_util
 import torch.nn as nn
 from torch.optim import Optimizer
 from typing import List, Dict
