@@ -1,6 +1,4 @@
-"""
 # sitplus.generators.generate_utahs
-"""
 import bpy
 import json
 import os
@@ -9,10 +7,12 @@ import math
 import sys
 from mathutils import Matrix, Vector
 import numpy as np
-
 # Add path for IPC protocol
 sys.path.append(os.path.abspath("."))
-from sitplus.utils.ipc_protocol import pack_log, pack_error, _pack_teapot_data_ipc
+from sitplus.utils.ipc_protocol import pack_log, pack_error, _pack_teapot_data_ipc 
+
+import gpu
+from gpu_extras.presets import draw_texture_2d
 
 # --- CONFIGURATION ---
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -27,9 +27,8 @@ TEAPOT_STRETCH_RANGE = (0.7, 1.3)
 TEAPOT_SHEAR_RANGE = (-0.5, 0.5)
 TEAPOT_FRAME_RATIO_RANGE = (1/9, 12/7)
 LIGHT_DISTANCE_RANGE = (5, 30)
-LIGHT_BASE_STRENGTH = 10000    #post-multiplied for cycles
+LIGHT_BASE_STRENGTH = 1000
 LIGHT_STRENGTH_GAMMA = 2.0
-
 # --- UTILITY FUNCTIONS ---
 
 def log(message: str, is_error: bool = False):
@@ -60,6 +59,7 @@ def create_shear_matrix(factor):
 
 def setup_scene(stl_filepath):
     """Clears the scene and sets up the core objects."""
+    global OFFSCREEN
     clear_scene()
     
     if not os.path.exists(stl_filepath):
@@ -70,94 +70,32 @@ def setup_scene(stl_filepath):
     
     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
     teapot.location = (0, 0, 0)
-
-    # Give the teapot a basic material so it's actually visible in Cycles
-    mat = bpy.data.materials.new(name="TeapotMaterial")
-    mat.use_nodes = True
-    bsdf = mat.node_tree.nodes.get('Principled BSDF')
-    if bsdf:
-        bsdf.inputs['Base Color'].default_value = (0.8, 0.8, 0.8, 1.0)  # Light grey
-        bsdf.inputs['Metallic'].default_value = 0.3
-        bsdf.inputs['Roughness'].default_value = 0.4
-
-    if teapot.data.materials:
-        teapot.data.materials[0] = mat
-    else:
-        teapot.data.materials.append(mat)
-
-    log("Material assigned to teapot")
     
     bpy.ops.object.camera_add()
     camera = bpy.context.object
     camera.name = "Camera"
     
-    # Create 5-point lighting rig
-    lights = []
-    for i in range(5):
-        bpy.ops.object.light_add(type='POINT')
-        light = bpy.context.object
-        light.name = f"Light_{i}"
-        lights.append(light)
-
-    # Light 0 is the key light (strongest)
-    lights[0].data.energy = LIGHT_BASE_STRENGTH
-    lights[0].name = "KeyLight"
-
-    # Lights 1-4 are fill lights (weaker, form a tetrahedral arrangement)
-    for i in range(1, 5):
-        lights[i].data.energy = LIGHT_BASE_STRENGTH * 0.3  # 30% of key light
-        lights[i].name = f"FillLight_{i}"
-
-    log(f"Created 5-point lighting rig")
+    bpy.ops.object.light_add(type='POINT')
+    light = bpy.context.object
+    light.name = "Light"
     
     bpy.context.scene.camera = camera
 
     scene = bpy.context.scene
-    scene.use_nodes = True
-    tree = scene.node_tree
-
-    for node in tree.nodes:
-        tree.nodes.remove(node)
+    scene.use_nodes = False 
         
-    render_layers_node = tree.nodes.new('CompositorNodeRLayers')
-    viewer_node = tree.nodes.new('CompositorNodeViewer')
-    tree.links.new(render_layers_node.outputs['Image'], viewer_node.inputs['Image'])
-
-    #scene.render.engine = 'BLENDER_EEVEE'
-    # Set the render engine to Cycles
-    scene.render.engine = 'CYCLES'
-    scene.cycles.device = 'GPU'
-    # Get Cycles preferences
-    prefs = bpy.context.preferences
-    cycles_prefs = prefs.addons['cycles'].preferences
-        # Set compute device type (try CUDA, OPTIX for RTX, or HIP for AMD)
-    cycles_prefs.compute_device_type = 'OPTIX'  # or 'OPTIX' or 'HIP'
-    # Refresh devices
-    cycles_prefs.get_devices()
-    for device in cycles_prefs.devices:
-        if device.type in ['CUDA', 'OPTIX', 'HIP']:
-            device.use = True
-            log(f"Enabled GPU device: {device.name}")
-
-    # Optimize Cycles for speed over quality
-    scene.cycles.samples = 32  # Reduce for faster renders
-    scene.cycles.use_adaptive_sampling = True
-    scene.cycles.adaptive_threshold = 0.05
-    scene.cycles.max_bounces = 4  # Reduce bounces
-    scene.cycles.diffuse_bounces = 2
-    scene.cycles.glossy_bounces = 2
-    scene.cycles.transmission_bounces = 2
-    scene.cycles.volume_bounces = 0
-    scene.cycles.transparent_max_bounces = 4
-
-
+    # Set render defaults
+    scene.render.engine = 'BLENDER_EEVEE'
     scene.render.resolution_x = 256
     scene.render.resolution_y = 256
-    scene.render.image_settings.file_format = 'PNG'
+    
+    # Set to PNG/32 for a stable float output format, even though we read memory
+    scene.render.image_settings.file_format = 'PNG' 
+    scene.render.image_settings.color_depth = '16' 
+    scene.render.image_settings.color_mode = 'RGBA' 
+    return teapot, camera, light
 
-    return teapot, camera, lights
-
-def generate_and_apply_parameters(teapot, camera, lights):
+def generate_and_apply_parameters(teapot, camera, light):
     """Generates random parameters and applies them to the scene objects."""
     params = {}
     
@@ -184,61 +122,23 @@ def generate_and_apply_parameters(teapot, camera, lights):
     shear_mat = create_shear_matrix(shear)
     teapot.matrix_world @= shear_mat
 
-    # === LIGHTING: 5-point randomized setup ===
+    light_dist = random.uniform(*LIGHT_DISTANCE_RANGE)
+    light_theta = math.radians(random.uniform(0, 360))
+    light_phi = math.radians(random.uniform(0, 180))
     
-    # 1. Key light (main light source)
-    key_dist = random.uniform(*LIGHT_DISTANCE_RANGE)
-    key_theta = math.radians(random.uniform(0, 360))
-    key_phi = math.radians(random.uniform(30, 150))  # Avoid extreme angles
+    light_x = light_dist * math.sin(light_phi) * math.cos(light_theta)
+    light_y = light_dist * math.sin(light_phi) * math.sin(light_theta)
+    light_z = light_dist * math.cos(light_phi)
     
-    key_x = key_dist * math.sin(key_phi) * math.cos(key_theta)
-    key_y = key_dist * math.sin(key_phi) * math.sin(key_theta)
-    key_z = key_dist * math.cos(key_phi)
+    light_strength = LIGHT_BASE_STRENGTH / (light_dist**LIGHT_STRENGTH_GAMMA)
     
-    key_strength = LIGHT_BASE_STRENGTH / (key_dist**LIGHT_STRENGTH_GAMMA)
+    params['light'] = {
+        'location': (light_x, light_y, light_z),
+        'energy': light_strength
+    }
     
-    lights[0].location = (key_x, key_y, key_z)
-    lights[0].data.energy = key_strength * 100  # Cycles multiplier
-    
-    params['lights'] = [{
-        'name': 'key',
-        'location': (key_x, key_y, key_z),
-        'energy': key_strength * 100
-    }]
-    
-    # 2. Fill lights in randomized tetrahedral orbit
-    # Random axial tilt for the fill light plane
-    tilt_axis_theta = math.radians(random.uniform(0, 360))
-    tilt_axis_phi = math.radians(random.uniform(0, 180))
-    tilt_angle = math.radians(random.uniform(-45, 45))  # Up to 45° tilt
-    
-    # Base positions for 4 fill lights (square around teapot)
-    fill_base_angles = [0, 90, 180, 270]  # degrees
-    fill_dist = random.uniform(LIGHT_DISTANCE_RANGE[0], LIGHT_DISTANCE_RANGE[1])
-    
-    for i, base_angle in enumerate(fill_base_angles, start=1):
-        # Start with position on a circle
-        theta = math.radians(base_angle)
-        phi = math.radians(90)  # Equatorial
-        
-        x = fill_dist * math.sin(phi) * math.cos(theta)
-        y = fill_dist * math.sin(phi) * math.sin(theta)
-        z = fill_dist * math.cos(phi)
-        
-        # Apply random tilt (rotate around random axis)
-        # Simplified: just add random Z offset to break symmetry
-        z += random.uniform(-fill_dist * 0.3, fill_dist * 0.3)
-        
-        fill_strength = (LIGHT_BASE_STRENGTH * 0.3) / (fill_dist**LIGHT_STRENGTH_GAMMA)
-        
-        lights[i].location = (x, y, z)
-        lights[i].data.energy = fill_strength * 100  # Cycles multiplier
-        
-        params['lights'].append({
-            'name': f'fill_{i}',
-            'location': (x, y, z),
-            'energy': fill_strength * 100
-        })
+    light.location = params['light']['location']
+    light.data.energy = params['light']['energy']
 
     teapot_height = teapot.dimensions.z
     frame_ratio = random.uniform(*TEAPOT_FRAME_RATIO_RANGE)
@@ -264,39 +164,112 @@ def generate_and_apply_parameters(teapot, camera, lights):
     return params
 
 def render_to_buffer(scene):
-    """Renders the scene and returns the pixel data as a NumPy array."""
-    bpy.ops.render.render(write_still=False)
-
-    #viewer_image = bpy.data.images['Viewer Node']
-    viewer_image = bpy.data.images.get('Viewer Node')
-    if viewer_image:
-        pixels_sample = np.array(viewer_image.pixels[:100], dtype=np.float32)
-        log(f"Pixel sample stats: min={pixels_sample.min():.4f}, max={pixels_sample.max():.4f}, mean={pixels_sample.mean():.4f}")
-        
-        # Check if it's all zeros or all one value
-        if np.allclose(pixels_sample, 0):
-            log("WARNING: All pixels are zero - likely blank render", is_error=True)
-        elif np.allclose(pixels_sample, pixels_sample[0]):
-            log(f"WARNING: All pixels are same value ({pixels_sample[0]:.4f}) - uniform color", is_error=True)
-    width, height = viewer_image.size
+    """Renders the scene offscreen via GPUOffScreen and returns the pixel data as a NumPy array."""
     
-    if width == 0 or height == 0 or not viewer_image.pixels:
+    # --- TYPE TRANSFORMATION FUNCTION 1: Scene -> Matrix Data ---
+    def scene_to_matrix_data(s: bpy.types.Scene) -> tuple[Matrix, Matrix]:
+        """Calculates canonical View and Projection Matrices from the scene camera."""
+        context = bpy.context
+        
+        view_matrix = s.camera.matrix_world.inverted()
+        
+        # NOTE: This requires a valid context to get evaluated_depsgraph_get()
+        projection_matrix = s.camera.calc_matrix_camera(
+            context.evaluated_depsgraph_get(), 
+            x=s.render.resolution_x, 
+            y=s.render.resolution_y
+        )
+        return view_matrix, projection_matrix
+
+    # --- TYPE TRANSFORMATION FUNCTION 2: Matrix Data -> NumPy Buffer ---
+    # This function is the complex core that encapsulates all GPU API entanglement            
+    def matrix_data_to_buffer(width: int, height: int, view_matrix: Matrix, projection_matrix: Matrix) -> np.ndarray:
+        """Renders scene to GPUOffScreen buffer, reads it, and returns a flat NumPy array."""
+        offscreen = None
+        try:
+            # ... (OffScreen creation and binding remains)
+            offscreen = gpu.types.GPUOffScreen(width, height)
+            offscreen.bind()
+            
+            # 2. Render the 3D view into the buffer
+            # All positional arguments are mandatory, even if their values are None.
+            
+            # Note: For headless/background, context.space_data and context.region are None.
+            # Passing None directly is the correct C-style approach for optional pointers.
+            offscreen.draw_view3d(
+                bpy.context.scene,
+                bpy.context.view_layer,
+                bpy.context.space_data, # context.space_data (Must be None in headless)
+                bpy.context.region, # context.region (Must be None in headless)
+                view_matrix,
+                projection_matrix,
+                do_color_management=False
+            )
+            gpu.state.depth_mask_set(False)
+
+            # 3. Read the color buffer into a NumPy array (Using the simple read_color)
+            # The format for 32-bit float data is 'FLOAT'.
+            buffer = fb.read_color(
+                0, 
+                0, 
+                width, 
+                height, 
+                4,           # channels
+                0,           # slot (default color attachment)
+                'FLOAT'      # format
+            )
+            
+            # Convert the BGL buffer (or equivalent object returned by read_color) to a flat NumPy array
+            pixels = np.array(buffer, dtype=np.float32)
+
+            # 4. Cleanup
+            offscreen.unbind()
+            offscreen.free()
+            
+            return pixels
+        except Exception as e:
+            if offscreen: offscreen.free()
+            # Log the error and return an empty array for the failure state
+            log(f"Error during GPU draw/read: {e}", is_error=True)
+            return np.array([], dtype=np.float32)
+
+    # --- COMPOSITION ---
+    width = scene.render.resolution_x
+    height = scene.render.resolution_y
+    
+    # 1. Scene -> Matrix Data
+    view_matrix, projection_matrix = scene_to_matrix_data(scene)
+    
+    # 2. Matrix Data -> NumPy Buffer (The Render and Transfer)
+    pixels = matrix_data_to_buffer(width, height, view_matrix, projection_matrix)
+    
+    # --- FINAL VALIDATION AND RESHAPE ---
+    expected_pixel_count = width * height * 4
+    
+    if len(pixels) != expected_pixel_count:
+        # Check buffer integrity before sending
+        log(f"Final buffer size mismatch! Expected {expected_pixel_count} elements, got {len(pixels)}.", is_error=True)
         return np.array([], dtype=np.float32)
 
-    pixels = np.array(viewer_image.pixels[:])
+    # Reshape (Height, Width, 4) and flip [::-1, :, :] (OpenGL is often bottom-up)
     image = pixels.reshape(height, width, 4)[::-1, :, :]
     
     return image
 
-def render_and_get_params(command_data, teapot, camera, lights):
-    """Renders an image with the given parameters."""
+def render_and_get_params(command_data, teapot, camera, light):
+    """Generates and applies parameters, renders, and returns the result."""
     res_x = command_data.get("resolution_x", 256)
     res_y = command_data.get("resolution_y", 256)
-    bpy.context.scene.render.resolution_x = res_x
-    bpy.context.scene.render.resolution_y = res_y
+    
+    scene = bpy.context.scene
+    
+    # Set the new resolution - needed for the matrix calculation
+    scene.render.resolution_x = res_x
+    scene.render.resolution_y = res_y
 
     teapot.matrix_world = Matrix.Identity(4)
-    params = generate_and_apply_parameters(teapot, camera, lights)
+    params = generate_and_apply_parameters(teapot, camera, light)
+
     params['render'] = {
         'resolution_x': res_x,
         'resolution_y': res_y,
@@ -309,7 +282,7 @@ def main_worker_loop():
     """Synchronous worker loop: reads commands from stdin, writes packets to stdout."""
     try:
         log("Blender Worker: Setting up scene...")
-        teapot, camera, lights = setup_scene(STL_PATH)
+        teapot, camera, light = setup_scene(STL_PATH)
         log("Blender Worker: Setup complete. Awaiting commands on stdin.")
     except Exception as e:
         log(f"Blender Worker: FATAL ERROR during setup: {e}", is_error=True)
@@ -338,7 +311,7 @@ def main_worker_loop():
 
             if command == "render":
                 log("Blender Worker: Starting render...")
-                image_buffer, params = render_and_get_params(command_data, teapot, camera, lights)
+                image_buffer, params = render_and_get_params(command_data, teapot, camera, light)
                 
                 if image_buffer.size == 0:
                     log("Render failed", is_error=True)

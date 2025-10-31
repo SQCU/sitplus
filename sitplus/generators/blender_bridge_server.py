@@ -24,7 +24,12 @@ class BlenderBridge:
 
     async def start(self):
         blender_exe = get_blender_executable_path()
-        cmd = [blender_exe, "--background", "--log-level", "0", "--python", "sitplus/generators/generate_utahs.py"]
+        cmd = [
+            blender_exe, 
+            "--python", "sitplus/generators/generate_utahs.py",
+            # Add minimal window flags to satisfy OpenGL/GUI Context requirements
+            "--window-geometry", "0", "0", "1", "1" 
+        ]
         
         self.process = await asyncio.create_subprocess_exec(
             *cmd,
