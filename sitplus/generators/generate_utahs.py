@@ -135,12 +135,12 @@ def setup_scene(stl_filepath):
     # Refresh devices
     cycles_prefs.get_devices()
     for device in cycles_prefs.devices:
-        if device.type in ['CUDA', 'OPTIX', 'HIP']:
+        if device.type in ['CUDA', 'OPTIX']:
             device.use = True
             log(f"Enabled GPU device: {device.name}")
 
     # Optimize Cycles for speed over quality
-    scene.cycles.samples = 32  # Reduce for faster renders
+    scene.cycles.samples = 36  # Reduce for faster renders
     scene.cycles.use_adaptive_sampling = True
     scene.cycles.adaptive_threshold = 0.05
     scene.cycles.max_bounces = 4  # Reduce bounces
@@ -149,6 +149,9 @@ def setup_scene(stl_filepath):
     scene.cycles.transmission_bounces = 2
     scene.cycles.volume_bounces = 0
     scene.cycles.transparent_max_bounces = 4
+    scene.cycles.use_denoising = True
+    scene.cycles.use_adaptive_sampling = True
+    scene.cycles.adaptive_threshold = 0.01
 
 
     scene.render.resolution_x = 256

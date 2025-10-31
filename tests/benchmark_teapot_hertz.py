@@ -65,24 +65,27 @@ def validate_render_not_blank(image_tensor: torch.Tensor, min_mean: float = 0.05
     return True
 
 async def benchmark_hertz(websocket, resolution, num_images):
-    """
-    Runs a single benchmark on a connected WebSocket.
-    
-    The server process and connection management are handled by the caller (main).
-    """
     print(f"\n--- Benchmarking {num_images} images at {resolution[0]}x{resolution[1]} ---")
     
-    image_cache = []
     start_time = time.perf_counter()
+    tasks_in_flight = {} # Maps task_id -> start_time
+    image_cache = []
     
-    # We use the existing, persistent websocket connection
+    # --- Pipelined Request/Response Loop ---
     
-    for i in range(num_images):
-        # A. Send command
-        command = { "command": "render", "resolution_x": resolution[0], "resolution_y": resolution[1] }
-        await websocket.send(json.dumps(command))
+    # 1. Send an initial batch of requests
+    initial_batch_size = 8 # Start with a reasonable number
+    for i in range(min(initial_batch_size, num_images)):
+        task_id = f"res_{resolution[0]}x{resolution[1]}_img_{i}"
+        command = { "command": { "command": "render", "resolution_x": resolution[0], "resolution_y": resolution[1] } }
+        command['task_id'] = task_id
         
-        # B. Receive response (This is where the previous trace failed on the second run)
+        await websocket.send(json.dumps(command))
+        tasks_in_flight[task_id] = time.perf_counter()
+
+    # 2. Receive responses and send new requests
+    images_sent = initial_batch_size
+    while len(image_cache) < num_images:
         try:
             response = await websocket.recv()
         except websockets.exceptions.ConnectionClosedOK:
@@ -94,7 +97,41 @@ async def benchmark_hertz(websocket, resolution, num_images):
             try:
                 data = json.loads(response.decode('utf-8'))
                 params = data["params"]
+                task_id_recv = params.get("task_id")
                 image_bytes = base64.b64decode(data["image"])
+                if not image_bytes:
+                    print(f"ERROR: Server signaled a failure")
+                    break
+                if task_id_recv in tasks_in_flight:
+                    del tasks_in_flight[task_id_recv]
+                recv_res_y = params['render']['resolution_y']
+                recv_res_x = params['render']['resolution_x']
+
+                # Validation: Check if the buffer size matches the metadata
+                expected_size = recv_res_y * recv_res_x * 4 * 4 # Height * Width * Channels * sizeof(float32)
+                if len(image_bytes) != expected_size:
+                    print(f"ERROR: Buffer size mismatch! Metadata: {recv_res_x}x{recv_res_y} ({expected_size} bytes) vs Actual: {len(image_bytes)} bytes")
+                    # If the size is the old 256x256 size, it confirms the backend bug.
+                    break
+                
+                # Convert to tensor
+                image_np = np.frombuffer(image_bytes, dtype=np.float32).copy().reshape(recv_res_y, recv_res_x, 4)
+                image_tensor = torch.from_numpy(image_np[:, :, :3]).permute(2, 0, 1)
+                if not validate_render_not_blank(image_tensor):
+                    print(f"WARNING: Render {i} appears blank/invalid, not that you can do anything about it.")
+
+                image_cache.append(image_tensor)
+
+                # As soon as one task finishes, send another to keep the pipeline full
+                if images_sent < num_images:
+                    task_id = f"res_{resolution[0]}x{resolution[1]}_img_{images_sent}"
+                    command = { "command": { "command": "render", "resolution_x": resolution[0], "resolution_y": resolution[1] } }
+                    command['task_id'] = task_id
+                    
+                    await websocket.send(json.dumps(command))
+                    tasks_in_flight[task_id] = time.perf_counter()
+                    images_sent += 1
+
             except json.JSONDecodeError:
                 print(f"ERROR: Failed to decode JSON response: {response[:100]}...")
                 break
@@ -102,34 +139,6 @@ async def benchmark_hertz(websocket, resolution, num_images):
             print(f"ERROR: Unexpected response format: {type(response)}")
             break
 
-        if not image_bytes:
-            print(f"ERROR: Server signaled a failure")
-            break
-
-        # PATCH: Use the resolution returned by the server for reshaping.
-        # This fixes the bug where the client assumes success before checking the data.
-        if 'render' not in params:
-             print("ERROR: Server response missing 'render' metadata.")
-             break
-        
-        recv_res_y = params['render']['resolution_y']
-        recv_res_x = params['render']['resolution_x']
-
-        # Validation: Check if the buffer size matches the metadata
-        expected_size = recv_res_y * recv_res_x * 4 * 4 # Height * Width * Channels * sizeof(float32)
-        if len(image_bytes) != expected_size:
-            print(f"ERROR: Buffer size mismatch! Metadata: {recv_res_x}x{recv_res_y} ({expected_size} bytes) vs Actual: {len(image_bytes)} bytes")
-            # If the size is the old 256x256 size, it confirms the backend bug.
-            break
-
-        # C. Convert to tensor
-        image_np = np.frombuffer(image_bytes, dtype=np.float32).copy().reshape(recv_res_y, recv_res_x, 4)
-        image_tensor = torch.from_numpy(image_np[:, :, :3]).permute(2, 0, 1)
-        if not validate_render_not_blank(image_tensor):
-            print(f"WARNING: Render {i} appears blank/invalid, not that you can do anything about it.")
-
-        image_cache.append(image_tensor)
-        
     end_time = time.perf_counter()
     
     duration = end_time - start_time
@@ -207,6 +216,12 @@ async def main():
             results[f"{res[0]}x{res[1]}"] = hertz
             
     finally:
+                    
+        print("\n--- Preliminary Teapot-Hertz Summary ---")
+        for res_str, hertz in results.items():
+            print(f"  {res_str}: {hertz:.2f} Hz")
+        print("----------------------------------")
+        """
         # --- 4. Single Shutdown (AFTER all tests) ---
         if 'websocket' in locals():
             # Attempt to send the quit command and rely on exception handling if it's closed.
@@ -227,7 +242,7 @@ async def main():
                 await websocket.close()
             except Exception:
                 pass
-
+        """
         # Terminate the process if we launched it
         if server_process and server_process.returncode is None:
             print("Terminating Blender Bridge Server process...")
